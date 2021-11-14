@@ -4,7 +4,11 @@
   "description": "Reactive helpers built around watching computation changes.",
   "author": "Damian Tarnawski @thetarnav <gthetarnav@gmail.com>",
   "license": "MIT",
-  "homepage": "https://github.com/davedbase/solid-primitives/tree/main/packages/watch",
+  "homepage": "https://github.com/thetarnav/solid-watch-primitives",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thetarnav/solid-watch-primitives.git"
+  },
   "private": false,
   "main": "dist/index.js",
   "module": "dist/index.js",
