@@ -6,6 +6,8 @@
 
 #### The original idea and part of the used logic comes from [Anthony Fu's vueuse library](https://github.com/vueuse/vueuse) for Vue.
 
+[try on codesandbox](https://codesandbox.io/s/solid-watch-primitives-zoxwe?file=/src/index.tsx)
+
 ## The Usage:
 
 ### Installation:
