@@ -1,8 +1,20 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "declaration": true,
+    "target": "esnext",
+    "newLine": "LF",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
     "outDir": "./dist",
     "emitDeclarationOnly": false
   },
-  "include": ["./src"]
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
