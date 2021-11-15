@@ -1,43 +1,48 @@
-import { createEffect, createRoot, on, onCleanup } from "solid-js"
-import {
-   WatchFilterReturn,
-   CreateWatchOptions,
-   Fn,
-   StopWatch,
-   ValidWatchCallback,
-   WatchArrayCallback,
+import { createEffect, createRoot, on, onCleanup } from 'solid-js'
+import type { Fn } from './common'
+import type {
    WatchOptions,
+   WatchArrayCallback,
+   WatchFilterReturn,
    WatchSignalCallback,
-} from "./common"
+} from './types'
 
 export function createWatch<
-   T extends (() => any)[] | (() => any),
+   Source extends Fn<any>[] | Fn<any>,
    U,
-   R extends {}
->(filter: WatchFilterReturn<T, U, R>): R
+   Returns extends {},
+>(
+   filter: WatchFilterReturn<Source, U, Returns>,
+   options?: { defer?: boolean },
+): Returns
 
-export function createWatch<T extends (() => any)[], U, R extends {}>(
-   source: [...T],
-   fn: WatchArrayCallback<T, U>,
-   options?: CreateWatchOptions<R>
-): R
+export function createWatch<Source extends Fn<any>[], U, Returns extends {}>(
+   source: [...Source],
+   fn: WatchArrayCallback<Source, U>,
+   options?: WatchOptions<Returns>,
+): Returns
 
-export function createWatch<T extends () => any, U, R extends {}>(
-   source: T,
-   fn: WatchSignalCallback<T, U>,
-   options?: CreateWatchOptions<R>
-): R
+export function createWatch<Source extends Fn<any>, U, Returns extends {}>(
+   source: Source,
+   fn: WatchSignalCallback<Source, U>,
+   options?: WatchOptions<Returns>,
+): Returns
 
 export function createWatch(...a: any): Object {
-   console.log("createWatch a", a)
+   console.log('createWatch a', a)
 
-   if (typeof a[1] === "undefined") a = a[0]
+   let defer = true
+   if (typeof a[1] !== 'function') {
+      // passed a filter
+      if (typeof a[1]?.defer !== 'undefined') defer = a[1].defer
+      a = a[0]
+   }
    const source: any = a[0]
    const fn: Fn = a[1]
-   const options: CreateWatchOptions<Object> = a[2] ?? {}
-   const { defer = true, returns = {} } = options
+   const options: WatchOptions<Object> = a[2] ?? {}
+   const { returns = {} } = options
 
-   console.log("createWatch b", [source, fn, options])
+   console.log('createWatch b', [source, fn, options], defer)
 
    if (options.handleStop) {
       const stop = createRoot(stop => {

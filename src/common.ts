@@ -1,4 +1,4 @@
-import type { Accessor, ReturnTypes } from "solid-js"
+import type { Accessor, ReturnTypes } from 'solid-js'
 
 export type Fn<R = void> = () => R
 /**
@@ -6,56 +6,30 @@ export type Fn<R = void> = () => R
  */
 export type ElementOf<T> = T extends (infer E)[] ? E : never
 export type MaybeAccessor<T> = T | Accessor<T>
-export const read = <T>(val: MaybeAccessor<T>): T =>
-   typeof val === "function" ? (val as Function)() : val
+
+export const access = <T>(v: MaybeAccessor<T>): T =>
+   typeof v === 'function' ? (v as any)() : v
+
+export const accessAsArray = <T>(value: MaybeAccessor<T[] | T>): T[] => {
+   const _value = access(value)
+   return Array.isArray(_value) ? _value : [_value]
+}
+
+export const withAccess = <T>(
+   value: MaybeAccessor<T>,
+   fn: (value: NonNullable<T>) => void,
+) => {
+   const _value = access(value)
+   _value && fn(_value as NonNullable<T>)
+}
 
 export const promiseTimeout = (
    ms: number,
    throwOnTimeout = false,
-   reason = "Timeout"
+   reason = 'Timeout',
 ): Promise<void> =>
    new Promise((resolve, reject) =>
       throwOnTimeout
          ? setTimeout(() => reject(reason), ms)
-         : setTimeout(resolve, ms)
+         : setTimeout(resolve, ms),
    )
-
-export type StopWatch = Fn
-
-export type WatchOptions = {
-   name?: string // from createEffect
-   defer?: boolean // from on
-}
-
-export interface CreateWatchOptions<R extends Object> extends WatchOptions {
-   handleStop?: (stop: Fn) => void
-   returns?: R
-}
-
-export type ValidWatchCallback = (
-   input: any,
-   prevInput: any,
-   prevValue?: any
-) => any
-
-export type WatchArrayCallback<T extends (() => any)[], U> = (
-   input: ReturnTypes<T>,
-   prevInput: ReturnTypes<T>,
-   prevValue?: U
-) => U
-
-export type WatchSignalCallback<T extends () => any, U> = (
-   input: ReturnType<T>,
-   prevInput: ReturnType<T>,
-   prevValue?: U
-) => U
-
-export type WatchFilterReturn<
-   T extends (() => any)[] | (() => any),
-   U,
-   R extends Object
-> = T extends (() => any)[]
-   ? [[...T], WatchArrayCallback<T, U>, CreateWatchOptions<R>]
-   : T extends () => any
-   ? [T, WatchSignalCallback<T, U>, CreateWatchOptions<R>]
-   : never
