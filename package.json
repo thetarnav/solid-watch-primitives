@@ -17,6 +17,7 @@
     "dist"
   ],
   "sideEffects": "false",
+  "type": "module",
   "scripts": {
     "prebuild": "npm run clean",
     "clean": "rimraf dist/",
