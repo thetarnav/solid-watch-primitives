@@ -1,5 +1,5 @@
-export * from './createWatch'
-export * from './createWatchFilter'
+export * from './createFilteredEffect'
+export * from './createFilter'
 export * from './filters'
 export * from './until'
 export * from './types'

@@ -1,20 +1,19 @@
-import { createWatchFilter } from './createWatchFilter'
+import { createFilter } from './createFilter'
 import _debounce from '@solid-primitives/debounce'
 import _throttle from '@solid-primitives/throttle'
 import { Accessor, createMemo, createSignal, onCleanup, Setter } from 'solid-js'
 import { access, Fn, MaybeAccessor } from './common'
-import { StopWatch } from './types'
+import { StopEffect } from './types'
 
-export const stoppable = createWatchFilter<
-   void,
-   { stop: () => StopWatch },
-   true
->((s, callback, o, stop) => [callback, { stop }], true)
+export const stoppable = createFilter<void, { stop: StopEffect }, true>(
+   (s, callback, o, stop) => [callback, { stop }],
+   true,
+)
 
-export const once = createWatchFilter<void, {}, true>(
+export const once = createFilter<void, {}, true>(
    (s, callback, o, stop) => [
       (...a) => {
-         stop()()
+         stop()
          callback(...a)
       },
       {},
@@ -22,7 +21,7 @@ export const once = createWatchFilter<void, {}, true>(
    true,
 )
 
-export const atMost = createWatchFilter<
+export const atMost = createFilter<
    { limit: MaybeAccessor<number> },
    { count: Accessor<number> },
    true
@@ -30,13 +29,13 @@ export const atMost = createWatchFilter<
    const [count, setCount] = createSignal(0)
    const _fn = (...a: [any, any, any]) => {
       setCount(p => p + 1)
-      count() + 1 >= access(options.limit) && stop()()
+      count() + 1 >= access(options.limit) && stop()
       callback(...a)
    }
    return [_fn, { count }]
 }, true)
 
-export const debounce = createWatchFilter<{
+export const debounce = createFilter<{
    wait: number
 }>((s, fn, options) => {
    const [_fn, clear] = _debounce(fn, options.wait)
@@ -44,7 +43,7 @@ export const debounce = createWatchFilter<{
    return [_fn, {}]
 })
 
-export const throttle = createWatchFilter<{
+export const throttle = createFilter<{
    wait: number
 }>((s, fn, options) => {
    const [_fn, clear] = _throttle(fn, options.wait)
@@ -52,7 +51,7 @@ export const throttle = createWatchFilter<{
    return [_fn, {}]
 })
 
-export const whenever = createWatchFilter<void>((source, fn) => {
+export const whenever = createFilter<void>((source, fn) => {
    const isArray = Array.isArray(source)
    const isTrue = createMemo(() =>
       isArray ? source.every(a => !!a()) : !!source(),
@@ -61,7 +60,7 @@ export const whenever = createWatchFilter<void>((source, fn) => {
    return [_fn, {}]
 })
 
-export const pausable = createWatchFilter<
+export const pausable = createFilter<
    { active?: boolean } | void,
    {
       pause: Fn
@@ -84,7 +83,7 @@ export const pausable = createWatchFilter<
    ]
 })
 
-export const ignorable = createWatchFilter<
+export const ignorable = createFilter<
    void,
    {
       ignoreNext: () => void | Setter<boolean>

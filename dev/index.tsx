@@ -1,19 +1,44 @@
-import { Component, createMemo, createSignal, Show } from "solid-js"
-import { render } from "solid-js/web"
-import { createWatch } from "../src"
+import { Component, createSignal } from 'solid-js'
+import { render } from 'solid-js/web'
+import {
+   createFilteredEffect,
+   whenever,
+   stoppable,
+   debounce,
+   pausable,
+} from '../src'
 
 const App: Component = () => {
    const [count, setCount] = createSignal(0)
 
-   setInterval(() => setCount(p => p + 1), 1000)
+   const countLoop = () => {
+      setTimeout(() => {
+         setCount(p => p + 1)
+         countLoop()
+      }, Math.random() * 1000)
+   }
+   countLoop()
 
-   // const stop = watch(count, x => {
-   //    console.log("watch", x)
-   //    if (count() > 10) stop()
-   // })
-   createWatch
+   const { stop, toggle } = createFilteredEffect(
+      stoppable(
+         pausable(
+            debounce(
+               count,
+               x => {
+                  console.log('watch', x)
+                  if (count() > 15) stop()
+               },
+               { wait: 300 },
+            ),
+            { active: false },
+         ),
+      ),
+   )
+   toggle(true)
+
+   createFilteredEffect([count, () => ''], x => {})
 
    return <div>Hello {count()}</div>
 }
 
-render(() => <App />, document.getElementById("app"))
+render(() => <App />, document.getElementById('root'))

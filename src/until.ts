@@ -1,5 +1,5 @@
 import { ReturnTypes } from 'solid-js'
-import { createWatch, stoppable, StopWatch } from '.'
+import { createFilteredEffect, stoppable, StopEffect } from '.'
 import { access, ElementOf, MaybeAccessor, promiseTimeout } from './common'
 
 export interface UntilToMatchOptions {
@@ -69,17 +69,16 @@ export function until(
       condition: (v: any) => boolean,
       { timeout, throwOnTimeout }: UntilToMatchOptions = {},
    ): Promise<void> {
-      let stop: StopWatch
+      let stop: StopEffect
       const watcher = new Promise<void>(resolve => {
-         stop = createWatch(
+         stop = createFilteredEffect(
             stoppable(source, v => {
                if (condition(v) === !isNot) {
                   stop()
                   resolve()
                }
             }),
-            { defer: false },
-         ).stop()
+         ).stop
       })
       const promises = [watcher]
       if (timeout)

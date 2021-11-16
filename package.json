@@ -16,7 +16,7 @@
   "files": [
     "dist"
   ],
-  "sideEffects": "false",
+  "sideEffects": false,
   "type": "module",
   "scripts": {
     "prebuild": "npm run clean",

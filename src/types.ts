@@ -1,58 +1,75 @@
 import type { ReturnTypes } from 'solid-js'
 import type { Fn } from './common'
 
-export type StopWatch = Fn
+export type StopEffect = Fn
 
-export interface WatchOptions<Returns extends {}> {
-   defer?: boolean // from "on"
-   handleStop?: (stop: StopWatch) => void
-   returns?: Returns
+export interface WatchOptions {
+   defer?: boolean // for "on"
 }
 
-export type ValidWatchCallback = (
-   input: any,
-   prevInput: any,
-   prevValue?: any,
-) => any
-
-export type WatchArrayCallback<Source extends Fn<any>[], U> = (
+export type EffectArrayCallback<Source extends Fn<any>[], U> = (
    input: ReturnTypes<Source>,
    prevInput: ReturnTypes<Source>,
    prevValue?: U,
 ) => U
 
-export type WatchSignalCallback<Source extends Fn<any>, U> = (
+export type EffectSignalCallback<Source extends Fn<any>, U> = (
    input: ReturnType<Source>,
    prevInput: ReturnType<Source>,
    prevValue?: U,
 ) => U
 
-export interface WatchFilter<
-   FilterOptions extends {} | void,
-   Returns extends {},
-> {
-   <Source extends Fn<any>[] | Fn<any>, U, N extends {}>(
-      filter: WatchFilterReturn<Source, U, N>,
-      options: FilterOptions,
-   ): WatchFilterReturn<Source, U, Returns & N>
+export type EffectCallback<
+   Source extends Fn<any> | Fn<any>[],
+   U,
+> = Source extends Fn<any>[]
+   ? EffectArrayCallback<Source, U>
+   : Source extends Fn<any>
+   ? EffectSignalCallback<Source, U>
+   : never
+
+export type EffectSource<
+   Source extends Fn<any> | Fn<any>[],
+   U,
+> = Source extends Fn<any>[]
+   ? [...Source]
+   : Source extends Fn<any>
+   ? Source
+   : never
+
+export interface Filter<Config extends {} | void, Returns extends {}> {
+   <Source extends Fn<any>[] | Fn<any>, U, NestedReturns extends {}>(
+      filter: FilterReturn<Source, U, NestedReturns>,
+      options: Config,
+   ): FilterReturn<Source, U, Returns & NestedReturns>
    <Source extends Fn<any>[], U>(
       source: [...Source],
-      callback: WatchArrayCallback<Source, U>,
-      options: FilterOptions,
-   ): WatchFilterReturn<Source, U, Returns>
+      callback: EffectArrayCallback<Source, U>,
+      options: Config,
+   ): FilterReturn<Source, U, Returns>
    <Source extends Fn<any>, U>(
       source: Source,
-      callback: WatchSignalCallback<Source, U>,
-      options: FilterOptions,
-   ): WatchFilterReturn<Source, U, Returns>
+      callback: EffectSignalCallback<Source, U>,
+      options: Config,
+   ): FilterReturn<Source, U, Returns>
 }
 
-export type WatchFilterReturn<
+export type FilterFnModifier<
    Source extends Fn<any>[] | Fn<any>,
    U,
    Returns extends {},
-> = Source extends Fn<any>[]
-   ? [[...Source], WatchArrayCallback<Source, U>, WatchOptions<Returns>]
-   : Source extends Fn<any>
-   ? [Source, WatchSignalCallback<Source, U>, WatchOptions<Returns>]
-   : never
+> = (
+   callback: EffectCallback<Source, U>,
+   stop: StopEffect | undefined,
+) => [EffectCallback<Source, U>, Returns]
+
+export type FilterReturn<
+   Source extends Fn<any>[] | Fn<any>,
+   U,
+   Returns extends {},
+> = {
+   stopRequired: boolean
+   initialSource: EffectSource<Source, U>
+   initialCallback: EffectCallback<Source, U>
+   modifyers: FilterFnModifier<Source, U, Returns>[]
+}

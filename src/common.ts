@@ -1,4 +1,4 @@
-import type { Accessor, ReturnTypes } from 'solid-js'
+import type { Accessor } from 'solid-js'
 
 export type Fn<R = void> = () => R
 /**
@@ -20,7 +20,8 @@ export const withAccess = <T>(
    fn: (value: NonNullable<T>) => void,
 ) => {
    const _value = access(value)
-   _value && fn(_value as NonNullable<T>)
+   if (typeof _value !== 'undefined' && _value !== null)
+      fn(_value as NonNullable<T>)
 }
 
 export const promiseTimeout = (
