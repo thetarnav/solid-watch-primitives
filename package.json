@@ -1,6 +1,6 @@
 {
   "name": "solid-watch-primitives",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Reactive helpers built around watching computation changes.",
   "author": "Damian Tarnawski @thetarnav <gthetarnav@gmail.com>",
   "license": "MIT",
