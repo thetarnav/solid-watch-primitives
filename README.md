@@ -111,6 +111,10 @@ import {
 
 returns `{ stop: StopWatch }`, that can be used to manually dispose of the effects.
 
+```ts
+const { stop } = createWatch(stoppable(counter, n => console.log(n)))
+```
+
 ### once
 
 disposes itself on the first captured change.
