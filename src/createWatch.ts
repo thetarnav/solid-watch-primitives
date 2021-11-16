@@ -29,8 +29,6 @@ export function createWatch<Source extends Fn<any>, U, Returns extends {}>(
 ): Returns
 
 export function createWatch(...a: any): Object {
-   console.log('createWatch a', a)
-
    let defer = true
    if (typeof a[1] !== 'function') {
       // passed a filter
@@ -42,8 +40,6 @@ export function createWatch(...a: any): Object {
    const options: WatchOptions<Object> = a[2] ?? {}
    const { returns = {} } = options
 
-   console.log('createWatch b', [source, fn, options], defer)
-
    if (options.handleStop) {
       const stop = createRoot(stop => {
          createEffect(on(source, fn, { defer }))
@@ -54,5 +50,6 @@ export function createWatch(...a: any): Object {
    } else {
       createEffect(on(source, fn, { defer }))
    }
+
    return returns
 }
