@@ -25,11 +25,11 @@ export const atMost = createFilter<
    { limit: MaybeAccessor<number> },
    { count: Accessor<number> },
    true
->((s, callback, options, stop) => {
+>((s, callback, config, stop) => {
    const [count, setCount] = createSignal(0)
    const _fn = (...a: [any, any, any]) => {
       setCount(p => p + 1)
-      count() + 1 >= access(options.limit) && stop()
+      count() + 1 >= access(config.limit) && stop()
       callback(...a)
    }
    return [_fn, { count }]

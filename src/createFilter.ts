@@ -11,16 +11,16 @@ import type { Fn } from './common'
 export function createFilter<
    Config extends {} | void,
    Returns extends {} = {},
-   HandlesStop extends boolean = false,
+   RequireStop extends boolean = false,
 >(
-   creator: (
+   modifier: (
       source: Fn<any> | Fn<any>[],
       callback: EffectArrayCallback<Fn<any>[], unknown> &
          EffectSignalCallback<Fn<any>, unknown>,
       options: Config,
-      stop: HandlesStop extends true ? StopEffect : undefined,
+      stop: RequireStop extends true ? StopEffect : undefined,
    ) => [(input: any, prevInput: any, prevValue?: unknown) => void, Returns],
-   requireStop?: HandlesStop,
+   requireStop?: RequireStop,
 ): Filter<Config, Returns> {
    return (a: any, b?: any, c?: any): FilterReturn<any, any, Returns> => {
       const stopRequired = (requireStop as boolean) ?? false
@@ -46,7 +46,7 @@ export function createFilter<
       const filterModifier: FilterFnModifier<any, any, Returns> = (
          callback,
          stop,
-      ) => creator(source, callback, options, stop as any)
+      ) => modifier(source, callback, options, stop as any)
       modifyers.push(filterModifier)
 
       return {

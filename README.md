@@ -6,7 +6,7 @@
 
 #### The original idea and parts of the used logic comes from [Anthony Fu's vueuse library](https://github.com/vueuse/vueuse) for Vue.
 
-[try on codesandbox](https://codesandbox.io/s/solid-watch-primitives-zoxwe?file=/src/index.tsx)
+[try on codesandbox](https://codesandbox.io/s/solid-watch-primitives-urb2u?file=/src/index.tsx)
 
 ## The Usage:
 
@@ -19,45 +19,52 @@ npm i solid-watch-primitives
 ### Available Primitives:
 
 ```ts
-import { createWatch, createWatchFilter, until } from 'solid-watch-primitives'
+import {
+   createFilteredEffect,
+   createFilter,
+   until,
+} from 'solid-watch-primitives'
 ```
 
-### createWatch
+### createFilteredEffect
 
-When used alone, it's a shortcut for `createEffect(on(source, fn, { defer: true }))`. But it can be combined with [Filters](#available-filters) to extend it's functionality.
+When used alone, it's a shortcut for `createEffect(on(source, fn))`. But it can be combined with [Filters](#available-filters) to extend it's functionality.
 
 ```ts
 const [counter, setCounter] = createSignal(0)
 
 // alone:
-createWatch(counter, n => console.log(n))
+createFilteredEffect(counter, n => console.log(n))
+
+// accepts "defer" option, same as on()
+createFilteredEffect(counter, n => console.log(n), { defer: true })
 
 // with filter:
-createWatch(debounced(counter, n => console.log(n), { wait: 300 }))
+createFilteredEffect(debounced(counter, n => console.log(n), { wait: 300 }))
 
 // with nested filters:
-const { stop, pause } = createWatch(
+const { stop, pause } = createFilteredEffect(
    stoppable(pausable(counter, n => console.log(n))),
 )
 ```
 
-### createWatchFilter
+### createFilter
 
-A utility for creating custom filters. Every available filter was made using this.
+A utility for creating your own custom filters. Every available filter was made using this.
 
 ```ts
-function createWatchFilter<FilterOptions, Returns, HandlesStop>(
-   creator: (
+function createFilter<Config, Returns, RequireStop>(
+   modifier: (
       source: Fn<any> | Fn<any>[], // like source of "on"
-      callback: WatchCallback, // like callback of "on"
-      options: FilterOptions, // options for your filter
-      getStop: () => StopWatch | false, // a StopWatch if HandlesStop
+      callback: EffectCallback, // like callback of "on"
+      config: Config, // config for your filter
+      stop: StopEffect | undefined, // a StopEffect if RequireStop
    ) => [CustomCallback, Returns], // return your modified callback and custom return values
-   requireStop?: HandlesStop, // true if you want to use StopWatch
-): WatchFilter {}
+   requireStop?: RequireStop, // true if you want to use StopEffect
+): Filter {}
 
 // for example, thats the source of "debounce"
-const debounce = createWatchFilter<{
+const debounce = createFilter<{
    wait: number
 }>((s, fn, options) => {
    const [_fn, clear] = _debounce(fn, options.wait)
@@ -65,16 +72,22 @@ const debounce = createWatchFilter<{
    return [_fn, {}]
 })
 
-// and this is "once", notice the required double "true" to use stop
-const once = createWatchFilter<void, {}, true>(
-   (s, callback, o, stop) => [
-      (...a) => {
-         stop()()
+// and this is "atMost", notice the required double "true" to use stop
+const atMost = createFilter<
+   { limit: MaybeAccessor<number> }, // config you require
+   { count: Accessor<number> }, // what you want to return
+   true // if you want to use stop()
+>(
+   (s, callback, config, stop) => {
+      const [count, setCount] = createSignal(0)
+      const _fn = (...a: [any, any, any]) => {
+         setCount(p => p + 1)
+         count() + 1 >= access(config.limit) && stop()
          callback(...a)
-      },
-      {},
-   ],
-   true,
+      }
+      return [_fn, { count }] // [CustomCallback, Returns]
+   },
+   true, // if you want to use stop()
 )
 ```
 
@@ -109,18 +122,21 @@ import {
 
 ### stoppable
 
-returns `{ stop: StopWatch }`, that can be used to manually dispose of the effects.
+returns `{ stop: StopEffect }`, that can be used to manually dispose of the effects.
 
 ```ts
-const { stop } = createWatch(stoppable(counter, n => console.log(n)))
+const { stop } = createFilteredEffect(stoppable(counter, n => console.log(n)))
 ```
 
 ### once
 
-disposes itself on the first captured change.
+disposes itself on the first captured change. **Set the defer option to true**, otherwise the callback will run and dispose itself on the initial setup.
 
 ```ts
-createWatch(once(counter, n => console.log(n)))
+createFilteredEffect(
+   once(counter, n => console.log(n)),
+   { defer: true },
+)
 ```
 
 ### atMost
@@ -128,7 +144,7 @@ createWatch(once(counter, n => console.log(n)))
 you specify the number of times it can triggered, until disposes itself.
 
 ```ts
-const { count } = createWatch(
+const { count } = createFilteredEffect(
    atMost(counter, n => console.log(n), { limit: 8 }),
 )
 ```
@@ -140,7 +156,7 @@ debounces callback
 ```ts
 const position = createScrollObserver()
 
-createWatch(debounce(position, x => console.log(x), { wait: 300 }))
+createFilteredEffect(debounce(position, x => console.log(x), { wait: 300 }))
 ```
 
 ### throttle
@@ -150,7 +166,7 @@ The callback is throttled
 ```ts
 const position = createScrollObserver()
 
-createWatch(throttle(position, x => console.log(x), { wait: 300 }))
+createFilteredEffect(throttle(position, x => console.log(x), { wait: 300 }))
 ```
 
 ### whenever
@@ -160,7 +176,7 @@ Runs callback each time the source is truthy.
 ```ts
 setInterval(() => setCount(p => p + 1), 1000)
 
-createWatch(
+createFilteredEffect(
    whenever(
       () => count() > 5,
       () => console.log(count()),
@@ -169,7 +185,7 @@ createWatch(
 // will fire on each count change, if count is gt 5
 // => 6, 7, 8, 9, 10, ...
 
-createWatch(
+createFilteredEffect(
    whenever(
       createMemo(() => count() > 5),
       () => console.log(count()),
@@ -184,7 +200,7 @@ createWatch(
 Manually controll if the callback gets to be executed
 
 ```ts
-const { pause, resume, toggle } = createWatch(
+const { pause, resume, toggle } = createFilteredEffect(
    pausable(counter, x => console.log(x), { active: false }),
 )
 ```
@@ -196,7 +212,7 @@ Somewhat similar to `pausable`, but ignore changes that would cause the next eff
 Because Solid batches together changes made in effects, the usage inside and outside effects will differ.
 
 ```ts
-const { ignoreNext, ignoring } = createWatch(ignorable(
+const { ignoreNext, ignoring } = createFilteredEffect(ignorable(
    counter,
    x => {
       // next effect will be ignored:
@@ -221,5 +237,5 @@ const ignoreMe = () => {
 
 // this watcher will work normally,
 // ignoring only affects the ignorableWatch above
-createWatch(counter, () => {...})
+createFilteredEffect(counter, () => {...})
 ```
