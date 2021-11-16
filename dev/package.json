@@ -1,0 +1,23 @@
+{
+  "name": "solid-watch-primitives",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "start": "parcel index.html",
+    "build": "parcel build index.html"
+  },
+  "dependencies": {
+    "@babel/core": "7.16.0",
+    "@babel/preset-typescript": "7.16.0",
+    "babel-preset-solid": "1.2.3",
+    "solid-js": "1.2.3",
+    "solid-watch-primitives": "0.0.1"
+  },
+  "devDependencies": {
+    "babel-preset-env": "^1.7.0",
+    "parcel-bundler": "^1.6.1",
+    "typescript": "^4.2.0-beta"
+  },
+  "keywords": []
+}
