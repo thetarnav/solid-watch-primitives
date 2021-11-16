@@ -19,11 +19,7 @@ npm i solid-watch-primitives
 ### Available Primitives:
 
 ```ts
-import {
-   createFilteredEffect,
-   createFilter,
-   until,
-} from 'solid-watch-primitives'
+import { createFilteredEffect, createFilter, until } from 'solid-watch-primitives'
 ```
 
 ### createFilteredEffect
@@ -43,9 +39,7 @@ createFilteredEffect(counter, n => console.log(n), { defer: true })
 createFilteredEffect(debounced(counter, n => console.log(n), { wait: 300 }))
 
 // with nested filters:
-const { stop, pause } = createFilteredEffect(
-   stoppable(pausable(counter, n => console.log(n))),
-)
+const { stop, pause } = createFilteredEffect(stoppable(pausable(counter, n => console.log(n))))
 ```
 
 ### createFilter
@@ -144,9 +138,7 @@ createFilteredEffect(
 you specify the number of times it can triggered, until disposes itself.
 
 ```ts
-const { count } = createFilteredEffect(
-   atMost(counter, n => console.log(n), { limit: 8 }),
-)
+const { count } = createFilteredEffect(atMost(counter, n => console.log(n), { limit: 8 }))
 ```
 
 ### debounce
