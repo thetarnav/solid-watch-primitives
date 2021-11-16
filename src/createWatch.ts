@@ -34,6 +34,8 @@ export function createWatch(...a: any): Object {
       // passed a filter
       if (typeof a[1]?.defer !== 'undefined') defer = a[1].defer
       a = a[0]
+   } else {
+      if (typeof a[2]?.defer !== 'undefined') defer = a[2].defer
    }
    const source: any = a[0]
    const fn: Fn = a[1]
